@@ -1,0 +1,13 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.name | dump }}
+  annotations:
+    github.com/project-slug: tonzthomas/backstage/backstage-app # Change the value to your github repo which contains terraform code.
+    backstage.io/techdocs-ref: dir:.
+  title: 'Infrastructure Automation' # you can give any title
+  description: Creating dev environments using Argo Workflows. # Change Description accordingly
+spec:
+  type: service
+  owner: user:guest
+  lifecycle: experimental

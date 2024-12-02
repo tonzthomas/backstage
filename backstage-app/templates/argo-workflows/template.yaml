@@ -1,0 +1,61 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: argo-workflow-template
+  title: Argo Workflow Deployment
+  description: Template for deploying Argo Workflows
+spec:
+  owner: team-infrastructure
+  type: workflow
+
+  parameters:
+    - title: Workflow Details
+      required:
+        - workflowName
+        - namespace
+      properties:
+        workflowName:
+          title: Workflow Name
+          type: string
+          description: Name of the Argo Workflow
+        namespace:
+          title: Kubernetes Namespace
+          type: string
+          default: default
+        dockerImage:
+          title: Docker Image
+          type: string
+          description: Container image to use in workflow
+          default: alpine:latest
+
+  steps:
+    - id: generate-workflow
+      name: Generate Argo Workflow
+      action: file:write
+      input:
+        path: ./workflow.yaml
+        content: |
+          apiVersion: argoproj.io/v1alpha1
+          kind: Workflow
+          metadata:
+            generateName: ${parameters.workflowName}-
+            namespace: ${parameters.namespace}
+          spec:
+            entrypoint: main
+            templates:
+            - name: main
+              container:
+                image: ${parameters.dockerImage}
+                command: ["/bin/sh"]
+                args: ["-c", "echo Running workflow"]
+
+    - id: apply-workflow
+      name: Apply Workflow to Kubernetes
+      action: kubernetes:apply
+      input:
+        yamlPath: ./workflow.yaml
+
+  output:
+    links:
+      - title: Workflow Details
+        url: /kubernetes/workflows/${parameters.workflowName}
