@@ -6,6 +6,20 @@
  * Happy hacking!
  */
 
+import { createRouter } from '@backstage/plugin-scaffolder-backend';
+import { argoTriggerWorkflowAction } from './services/argo-trigger-action';
+
+export default async function createPlugin({ logger, config, reader, discovery }: PluginEnvironment) {
+  return await createRouter({
+    logger,
+    config,
+    reader,
+    discovery,
+    additionalTemplateActions: [argoTriggerWorkflowAction],
+  });
+}
+
+
 import { createBackend } from '@backstage/backend-defaults';
 
 const backend = createBackend();

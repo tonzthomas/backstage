@@ -95,9 +95,7 @@ catalog:
         - allow: [User, Group]
 
     - type: file
-      target: ./templates/argo-workflows/template.yaml
-      rules:
-        - allow: [Template]
+      target: ../templates/**/*.yaml
 
     ## Uncomment these lines to add more example data
     # - type: url

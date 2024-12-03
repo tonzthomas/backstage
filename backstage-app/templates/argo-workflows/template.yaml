@@ -1,61 +1,32 @@
 apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
-  name: argo-workflow-template
-  title: Argo Workflow Deployment
-  description: Template for deploying Argo Workflows
+  name: trigger-argo-workflow
+  title: Trigger Argo Workflow
+  description: A template to trigger an Argo Workflow
 spec:
-  owner: team-infrastructure
-  type: workflow
-
   parameters:
-    - title: Workflow Details
-      required:
-        - workflowName
-        - namespace
+    - title: Workflow Parameters
       properties:
-        workflowName:
-          title: Workflow Name
+        workflowTemplate:
           type: string
-          description: Name of the Argo Workflow
+          title: Workflow Template
+          description: Name of the Argo Workflow template
         namespace:
-          title: Kubernetes Namespace
           type: string
-          default: default
-        dockerImage:
-          title: Docker Image
-          type: string
-          description: Container image to use in workflow
-          default: alpine:latest
-
+          title: Namespace
+          description: Namespace for the Argo Workflow
+        parameters:
+          type: object
+          title: Parameters
+          description: Parameters to pass to the workflow
   steps:
-    - id: generate-workflow
-      name: Generate Argo Workflow
-      action: file:write
+    - id: trigger-argo
+      name: Trigger Argo Workflow
+      action: argo:trigger-workflow
       input:
-        path: ./workflow.yaml
-        content: |
-          apiVersion: argoproj.io/v1alpha1
-          kind: Workflow
-          metadata:
-            generateName: ${parameters.workflowName}-
-            namespace: ${parameters.namespace}
-          spec:
-            entrypoint: main
-            templates:
-            - name: main
-              container:
-                image: ${parameters.dockerImage}
-                command: ["/bin/sh"]
-                args: ["-c", "echo Running workflow"]
-
-    - id: apply-workflow
-      name: Apply Workflow to Kubernetes
-      action: kubernetes:apply
-      input:
-        yamlPath: ./workflow.yaml
-
+        workflowTemplate: ${{ parameters.workflowTemplate }}
+        namespace: ${{ parameters.namespace }}
+        parameters: ${{ parameters.parameters }}
   output:
-    links:
-      - title: Workflow Details
-        url: /kubernetes/workflows/${parameters.workflowName}
+    workflowName: ${{ steps.trigger-argo.output.workflowName }}
